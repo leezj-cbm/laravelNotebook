@@ -40,7 +40,12 @@ php artisan make:view <foldername>.<viewname>
 ```
 php artisan make:resource <ResourceName>
 ```
+## Create Storage
 
+Note: create storage for image in tutorial link
+```
+php artisan storage:link
+```
 
 ## Apply unapplied migrations
 
