@@ -246,6 +246,7 @@ Take away points , in order to set up correct mapping:-
   - JS/Pages/Project/Index -> link to Project/Edit
   - JS/Pages/Project/Edit -> Page with the forms to update
   - App/Http/Controller/ProjectController -> edit function
+  - App/Http/Requests/UpdateProjectRequest - > for validation of request?
 
 1. Ensure Project.index edit link points to route(project.edit) and pass in the designated project to edit page
 
@@ -259,9 +260,91 @@ Take away points , in order to set up correct mapping:-
     </Link>
 ```
 
-2. Create an Project/Edit.jsx file. This file will be quite similar to the create file.
+2. Create an Project/Edit.jsx file. This file will be quite similar to the create file. There are some important differences compared to create!
 
-3. 
+```js
+// function side
+ const { data, setData, post, errors, reset } = useForm({
+    image: "",
+    name: project.name || "",
+    status: project.status || "",
+    description: project.description || "",
+    due_date: project.dueDate || "",
+    _method:'PUT', //---> this must be added in for INERTIA to work
+  });
+
+// return side
+   const onSubmit = (e) => {
+    e.preventDefault();
+    console.log("Project::edit->onSubmit, data="+Object.entries(data));
+    post(route("project.update",project.id)); // ----> although edit is a PUT method, we still use POST here for inertia to work , ALSO dont forget to pass in the project.id to the controller!
+  };
+
+```
+
+3. In the ProjectController , we need to code for the edit method and the update method
+
+```php
+// edit method
+ public function edit(Project $project)
+    {
+        //
+        return inertia('Project/Edit',[
+            'project'=> new ProjectResource($project),
+
+        ]);
+    }
+
+```
+
+```php
+// update method
+
+ public function update(UpdateProjectRequest $request, Project $project)
+    {
+        //
+        $data = $request->validated();
+        //dd($data); //-> data dump for testing purpose
+        $image=$data['image']?? null;
+        $data['updated_by']= Auth::id();
+        if ($image){
+            if($project->img_path){
+                Storage::disk('public')->deleteDirectory(dirname($project->img_path));
+            }
+            $data['img_path']= $image->store('project/'.Str::random(),'public');
+            Log::info("ProjectController:update=> Found image");
+         }
+         $project->update($data);
+         Log::info('ProjectController:update=> '.json_encode($data));
+         return to_route('project.index')->with('success','The project:'.(string)$request->name.' was updated');
+
+    }
+
+```
+
+4. The update function accepts a parameter $request from UpdateProjectRequest, so we need to update two functions here
+
+```php
+ public function authorize(): bool
+    {
+        return true; // ---> set it to true from false
+    }
+
+public function rules(): array
+    {
+        return [
+            //
+            "name"=>['required','max:255'],  // ---- > all the required form validation are here
+            "image"=>['nullable','image'],
+            "description"=>['nullable','string'],
+            "due_date"=> ['nullable','date'],
+            "status"=>['required',Rule::in(['pending','in_progress','completed'])],
+        ];
+    }
+
+```
+
+5. Test out the edit function. It should work now!
 
 ## Delete
 
