@@ -101,3 +101,26 @@ php artisan tinker
 ```
 php artisan route:list
 ```
+
+## Passport Commands
+
+https://laravel.com/docs/11.x/passport
+
+
+### Installation
+
+```
+php artisan install:api --passport
+
+php artisan passport:keys
+
+```
+
+### Issuing Access Tokens
+
+```
+php artisan passport:client
+
+
+
+```
