@@ -47,7 +47,14 @@ Note: create storage for image in tutorial link
 php artisan storage:link
 ```
 
-## Apply unapplied migrations
+## Migrations
+
+Create a pivot table : example User and Property
+```
+php artisan make:migration create_property_user_table --create=property_user
+```
+
+Start migration
 
 ```
 php artisan migrate
